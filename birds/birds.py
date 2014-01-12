@@ -28,9 +28,11 @@ class Bird:
         sky.birds.append(self)
         self.x = x or random.randint(1, SKY_WIDTH)
         self.y = y or random.randint(1, SKY_HEIGHT)
-        self.sx = sx or random.randint(0, 20) - 10
-        self.sy = sy or random.randint(0, 20) - 10
-        
+        self.sx = sx
+        self.sy = sy
+        if not sx or not sy:
+            self.fly_somewhere()
+
     def tick(self):
         self.x += self.sx
         self.y += self.sy
@@ -43,9 +45,16 @@ class Bird:
             self.sy = -abs(self.sy)
         if self.y <= 0:
             self.sy = abs(self.sy)
-            
-        self.follow_neighbours()
+
+        if random.randint(0, 100) == 1:
+            self.fly_somewhere()
+        else:
+            self.follow_neighbours()
         
+    def fly_somewhere(self):
+        self.sx = random.randint(0, 20) - 10
+        self.sy = random.randint(0, 20) - 10
+
     def follow_neighbours(self):
         neighbours = self.sky.get_neighbours(self, 20)
 
