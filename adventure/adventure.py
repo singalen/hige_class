@@ -5,13 +5,13 @@ from bottle import route, run, template
 
 class Cell:
     def __init__(self):
-        self.type = ' '
+        self.type = '_'
         self.items = []
         self.actions = []
         self.mobs = []
 
     def get_cell_type(self):
-        if self.type == ' ':
+        if self.type == '_':
             return 'равнина <br><br> ' \
                    '<center><img src="http://images2.wikia.nocookie.net/__cb20080409130942/starwars/images/f/f1/Great_Grass_Plains.jpg"/> </center>'
         if self.type == '*':
@@ -24,6 +24,8 @@ class Cell:
             return 'стена <br><br> ' \
                       '<center><img src="http://pohodushki.org/ru/reports/krasnodon-walls-and-volnuhino-quarry/images/krasnodon-walls-and-volnuhino-quarry-2483x640x480x0.jpg"/></center>'
         return 'чисто поле'
+    def get_cell_string(self):
+        return self.type
 
     def is_passable(self):
         return self.type not in ['=', '#']
@@ -36,27 +38,21 @@ class Player:
 
 player = Player()
 global_map = []
-string_global_map = []
 for i in range(30):
     global_map.append([Cell() for j in range(30)])
-    string_global_map.append(["_" for j in range(30)])
 
 for i in range(10):
     x = random.randint(0, 29)
     y = random.randint(0, 29)
     global_map[x][y].type = '*'
-    string_global_map[x][y] = '*'
 for i in range(10):
     x = random.randint(0, 29)
     y = random.randint(0, 29)
     global_map[x][y].type = '#'
-    string_global_map[x][y] = '#'
 for i in range(10):
     x = random.randint(0, 29)
     y = random.randint(0, 29)
     global_map[x][y].type = '='
-    string_global_map[x][y] = '='
-
 
 @route('/')
 def index():
@@ -65,8 +61,7 @@ def index():
 @route('/at/<x>/<y>')
 def index(x, y):
     global global_map
-    global string_global_map
-    map = ''
+    map = '<center> Карта: </center> <br>'
 
     x = int(x)
     y = int(y)
@@ -99,10 +94,10 @@ def index(x, y):
 
     for i in range(30):
         for j in range(30):
-            if(i == x and j == y):
+            if i == x and j == y:
                 map += "☻"
             else:
-                map += string_global_map[i][j]
+                map += global_map[i][j].get_cell_string()
         map += '<br>'
     page += '<pre><code><center>' + map + '</center></code></pre>' #пробуем вставить карту
 
