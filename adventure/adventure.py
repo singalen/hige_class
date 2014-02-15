@@ -71,7 +71,6 @@ def index(x, y):
     x = int(x)
     y = int(y)
     cell = global_map[x][y]
-    string_global_map[x][y] = "1"
 
     page = "Вы находитесь в точке ({}, {}). Здесь {}. <hr/>".format(x, y, cell.get_cell_type()) + \
         " Здесь есть: " + \
@@ -97,9 +96,13 @@ def index(x, y):
             page += '<br/><a href="/at/{}/{}"><b>Идти на восток</b></a>'.format(x, y+1)
         else:
             page += '<br/>На востоке {}'.format(global_map[x][y+1].get_cell_type())
+
     for i in range(30):
         for j in range(30):
-            map += string_global_map[i][j]
+            if(i == x and j == y):
+                map += "☻"
+            else:
+                map += string_global_map[i][j]
         map += '<br>'
     page += '<pre><code><center>' + map + '</center></code></pre>' #пробуем вставить карту
 
