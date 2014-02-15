@@ -72,7 +72,7 @@ def index(x, y):
             page += '<br/><a href="/at/{}/{}">Идти на запад</a>'.format(x, y-1)
         else:
             page += '<br/>На западе {}'.format(global_map[x][y-1].get_cell_type())
-    if x < len(global_map[x])-1:
+    if y < len(global_map[x])-1:
         if global_map[x][y+1].is_passable():
             page += '<br/><a href="/at/{}/{}">Идти на восток</a>'.format(x, y+1)
         else:
