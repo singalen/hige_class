@@ -71,6 +71,7 @@ def index(x, y):
         " Здесь есть: " + \
         "ничего." + "<hr/>"
 
+    # движение
     if x > 0:
         if global_map[x-1][y].is_passable():
             page += '<br/><a href="/at/{}/{}"><b>Идти на север</b></a>'.format(x-1, y)
@@ -92,10 +93,11 @@ def index(x, y):
         else:
             page += '<br/>На востоке {}'.format(global_map[x][y+1].get_cell_type())
 
+    # map by Romanzi (Рома)
     for i in range(30):
         for j in range(30):
             if i == x and j == y:
-                map += "☻"
+                map += "☺"
             else:
                 map += global_map[i][j].get_cell_string()
         map += '<br>'
