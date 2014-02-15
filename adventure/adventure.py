@@ -36,15 +36,26 @@ class Player:
 
 player = Player()
 global_map = []
+string_global_map = []
 for i in range(30):
     global_map.append([Cell() for j in range(30)])
+    string_global_map.append(["_" for j in range(30)])
 
 for i in range(10):
-    global_map[random.randint(0, 29)][random.randint(0, 29)].type = '*'
+    x = random.randint(0, 29)
+    y = random.randint(0, 29)
+    global_map[x][y].type = '*'
+    string_global_map[x][y] = '*'
 for i in range(10):
-    global_map[random.randint(0, 29)][random.randint(0, 29)].type = '#'
+    x = random.randint(0, 29)
+    y = random.randint(0, 29)
+    global_map[x][y].type = '#'
+    string_global_map[x][y] = '#'
 for i in range(10):
-    global_map[random.randint(0, 29)][random.randint(0, 29)].type = '='
+    x = random.randint(0, 29)
+    y = random.randint(0, 29)
+    global_map[x][y].type = '='
+    string_global_map[x][y] = '='
 
 
 @route('/')
@@ -54,10 +65,13 @@ def index():
 @route('/at/<x>/<y>')
 def index(x, y):
     global global_map
+    global string_global_map
+    map = ''
 
     x = int(x)
     y = int(y)
     cell = global_map[x][y]
+    string_global_map[x][y] = "1"
 
     page = "Вы находитесь в точке ({}, {}). Здесь {}. <hr/>".format(x, y, cell.get_cell_type()) + \
         " Здесь есть: " + \
@@ -83,7 +97,11 @@ def index(x, y):
             page += '<br/><a href="/at/{}/{}"><b>Идти на восток</b></a>'.format(x, y+1)
         else:
             page += '<br/>На востоке {}'.format(global_map[x][y+1].get_cell_type())
-    page += '<pre><code>' + str(global_map) + '</code></pre>'
+    for i in range(30):
+        for j in range(30):
+            map += string_global_map[i][j]
+        map += '<br>'
+    page += '<pre><code><center>' + map + '</center></code></pre>' #пробуем вставить карту
 
     return page
 
