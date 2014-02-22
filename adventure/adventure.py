@@ -32,16 +32,15 @@ class Cell:
     def is_passable(self):
         return self.type not in ['=', '#']
 
-
 class Player:
     def __init__(self):
         self.inventory = []
         self.grass = 0
         self.gold = 0
 
-
 player = Player()
 global_map = []
+
 for i in range(30):
     global_map.append([Cell() for j in range(30)])
 
@@ -75,11 +74,7 @@ def index(x, y):
     page = "Вы находитесь в точке ({}, {}). Здесь {}. <hr/>".format(x, y, cell.get_cell_type()) + "<hr/>"
 
     # продажа трав
-    if x == 0 and y == 0:
-        if player.grass != 0:
-            player.gold += player.grass * 2 # 2 золота за 1 травинку
-            player.grass = 0
-            page += "<br><b>Вы продали все травы<b></red><br>"
+    page = sold_grass(player, page)
 
     # вывод ресурсов
     page += "<br><b>" + make_grass() + "</b><br>"
@@ -109,6 +104,26 @@ def index(x, y):
             page += '<br/>На востоке {}'.format(global_map[x][y+1].get_cell_type())
 
     # map by Romanzi (Рома)
+    page = create_map(page, map)
+    return page
+
+def make_grass():
+    global player
+    if random.randint(0, 4) == 1:
+        grass = random.randint(1, 5)
+        player.grass += grass
+        return "Вы нашли " + str(grass) + " полезных трав(у)(ы) (их можно продать на месте старта)"
+    return "К сожалению, тут нет полезных предметов"
+
+def sold_grass(player, page):
+    if x == 0 and y == 0:
+        if player.grass != 0:
+            player.gold += player.grass * 2 # 2 золота за 1 травинку
+            player.grass = 0
+            page += "<br><b>Вы продали все травы<b></red><br>"
+    return page
+
+def create_map(page, map):
     for i in range(30):
         for j in range(30):
             if i == x and j == y:
@@ -121,13 +136,6 @@ def index(x, y):
             '<br> ♦ - сурикаты</b>'
     return page
 
-def make_grass():
-    global player
-    if random.randint(0, 4) == 1:
-        grass = random.randint(1, 5)
-        player.grass += grass
-        return "Вы нашли " + str(grass) + " полезных трав(у)(ы) (их можно продать на месте старта)"
-    return "К сожалению, тут нет полезных предметов"
 
 
 run(host='localhost', port=8080)
