@@ -69,7 +69,7 @@ def index(x, y):
     cell = global_map[x][y]
 
     page = "Вы находитесь в точке ({}, {}). Здесь {}. <hr/>".format(x, y, cell.get_cell_type()) + "<hr/>"
-    page += "<br><b>" + makeGrass() + "</b><br>"
+    page += "<br><b>" + make_grass() + "</b><br>"
     page += "<b>У вас " + str(player.grass) + " трав</b><br>"
 
     # движение
@@ -105,7 +105,7 @@ def index(x, y):
     page += '<pre><code><center>' + map + '</center></code></pre>' #пробуем вставить карту
     return page
 
-def makeGrass():
+def make_grass():
     global player
     if random.randint(0, 4) == 1:
         grass = random.randint(1, 5)
