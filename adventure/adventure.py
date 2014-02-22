@@ -35,6 +35,7 @@ class Player:
     def __init__(self):
         self.inventory = []
         self.grass = 0
+        self.gold = 0
 
 
 player = Player()
@@ -69,7 +70,17 @@ def index(x, y):
     cell = global_map[x][y]
 
     page = "Вы находитесь в точке ({}, {}). Здесь {}. <hr/>".format(x, y, cell.get_cell_type()) + "<hr/>"
+
+    # продажа трав
+    if x == 0 and y == 0:
+        if player.grass != 0:
+            player.gold += player.grass * 2 # 2 золота за 1 травинку
+            player.grass = 0
+            page += "<br><b>Вы продали все травы<b></red><br>"
+
+    # вывод ресурсов
     page += "<br><b>" + make_grass() + "</b><br>"
+    page += "<br><b>У вас " + str(player.gold) + " золота</b><br>"
     page += "<b>У вас " + str(player.grass) + " трав</b><br>"
 
     # движение
@@ -110,7 +121,7 @@ def make_grass():
     if random.randint(0, 4) == 1:
         grass = random.randint(1, 5)
         player.grass += grass
-        return "Вы нашли " + str(grass) + "полезных трав(у)(ы)"
+        return "Вы нашли " + str(grass) + "полезных трав(у)(ы) (их можно продать на месте старта)"
     return "К сожалению, тут нет полезных предметов"
 
 
