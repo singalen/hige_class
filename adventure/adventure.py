@@ -34,6 +34,7 @@ class Cell:
 class Player:
     def __init__(self):
         self.inventory = []
+        self.grass = 0
 
 
 player = Player()
@@ -60,16 +61,16 @@ def index():
 
 @route('/at/<x>/<y>')
 def index(x, y):
-    global global_map
+    global global_map, player
     map = '<center> Карта: </center> <br>'
 
     x = int(x)
     y = int(y)
     cell = global_map[x][y]
 
-    page = "Вы находитесь в точке ({}, {}). Здесь {}. <hr/>".format(x, y, cell.get_cell_type()) + \
-        " Здесь есть: " + \
-        "ничего." + "<hr/>"
+    page = "Вы находитесь в точке ({}, {}). Здесь {}. <hr/>".format(x, y, cell.get_cell_type()) + "<hr/>"
+    page += "<br><b>" + makeGrass() + "</b><br>"
+    page += "<b>У вас " + str(player.grass) + " трав</b><br>"
 
     # движение
     if x > 0:
@@ -102,7 +103,15 @@ def index(x, y):
                 map += global_map[i][j].get_cell_string()
         map += '<br>'
     page += '<pre><code><center>' + map + '</center></code></pre>' #пробуем вставить карту
-
     return page
+
+def makeGrass():
+    global player
+    if(random.randint(0, 4) == 1):
+        grass = random.randint(1, 5)
+        player.grass += grass
+        return "Вы нашли " + str(grass) + "полезных трав(у)(ы)"
+    return "К сожалению, тут нет полезных предметов"
+
 
 run(host='localhost', port=8080)
