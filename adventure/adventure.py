@@ -107,7 +107,7 @@ def index(x, y):
 
 def makeGrass():
     global player
-    if(random.randint(0, 4) == 1):
+    if random.randint(0, 4) == 1:
         grass = random.randint(1, 5)
         player.grass += grass
         return "Вы нашли " + str(grass) + "полезных трав(у)(ы)"
