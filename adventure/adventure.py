@@ -113,7 +113,8 @@ def index(x, y):
             else:
                 map += global_map[i][j].get_cell_string()
         map += '<br>'
-    page += '<pre><code><center>' + map + '</center></code></pre>' #пробуем вставить карту
+    page += '<pre><code><center>' + map + '</center></code></pre>' #вставляем карту
+    page += '<b> Легенда карты: <br><br> ☺ - игрок <br> = - озеро<br> * - кусты<br> # - природная стена и скалы</b>'
     return page
 
 def make_grass():
@@ -121,7 +122,7 @@ def make_grass():
     if random.randint(0, 4) == 1:
         grass = random.randint(1, 5)
         player.grass += grass
-        return "Вы нашли " + str(grass) + "полезных трав(у)(ы) (их можно продать на месте старта)"
+        return "Вы нашли " + str(grass) + " полезных трав(у)(ы) (их можно продать на месте старта)"
     return "К сожалению, тут нет полезных предметов"
 
 
