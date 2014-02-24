@@ -38,6 +38,9 @@ class Cell:
 class Player:
     def __init__(self):
         self.inventory = []
+        self.health = 30
+        self.max_health = 30
+        self.attack = 5
         self.grass = 0
         self.gold = 0
 
@@ -52,6 +55,15 @@ class Suricat:
         step_y = random.randint(-1, 1)
         self.x += step_x
         self.y += step_y
+
+
+class Snake:
+    def __init__(self):
+        self.x = 10
+        self.y = 10
+        self.health = 30
+        self.max_health = 30
+        self.attack = 5
 
 
 player = Player()
@@ -90,7 +102,9 @@ def index(x, y):
     y = int(y)
     cell = global_map[x][y]
 
-    page = "Вы находитесь в точке ({}, {}). Здесь {}. <hr/>".format(x, y, cell.get_cell_type()) + "<hr/>"
+    page = "Здоровье: <b>" + str(player.health) + "/" +str(player.max_health) + \
+           "</b>      Золото: <b>" + str(player.gold) + "</b>      Травы: <b>" + str(player.grass)
+    page += "</b><br> Вы находитесь в точке ({}, {}). Здесь {}. <hr/>".format(x, y, cell.get_cell_type()) + "<hr/>"
 
     # продажа трав
     if x == 0 and y == 0:
@@ -99,10 +113,8 @@ def index(x, y):
             player.grass = 0
             page += "<br><b>Вы продали все травы<b></red><br>"
 
-    # вывод ресурсов
+    # вывод травы
     page += "<br><b>" + make_grass() + "</b><br>"
-    page += "<br><b>У вас " + str(player.gold) + " золота</b><br>"
-    page += "<b>У вас " + str(player.grass) + " трав</b><br>"
 
     # движение
     if x > 0:
