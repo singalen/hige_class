@@ -21,11 +21,12 @@ class Cell:
             return 'озеро <br><br> ' \
                    '<center><img src="http://stat18.privet.ru/lr/0b1c4dfd0bf718666448823c8401546c"/> </center>'
         if self.type == '#':
-            return 'стена <br><br> ' \
+            return 'природная стена и скалы <br><br> ' \
                    '<center><img src="http://pohodushki.org/ru/reports/krasnodon-walls-and-volnuhino-quarry/images/krasnodon-walls-and-volnuhino-quarry-2483x640x480x0.jpg"/></center>'
         if self.type == '♦':
-            return '<b>дом сурикатов</b><br><br> <center> <img src="http://fotogaleri.ntvmsnbc.com/Assets/PhotoGallery/Pictures/0000164064.jpg"/></center>'
-        return 'чисто поле'
+            return '<b>сурикаты</b><br><br> ' \
+                   '<center> <img src="http://fotogaleri.ntvmsnbc.com/Assets/PhotoGallery/Pictures/0000164064.jpg"/></center>'
+        return 'степь'
 
     def get_cell_string(self):
         return self.type
@@ -41,10 +42,21 @@ class Player:
         self.gold = 0
 
 
+class Suricat:
+    def __init__(self):
+        self.x = 4
+        self.y = 5
+
+    def walking(self):
+        step_x = random.randint(-1, 1)
+        step_y = random.randint(-1, 1)
+        self.x += step_x
+        self.y += step_y
+
+
 player = Player()
+suricat = Suricat()
 global_map = []
-page = ''
-map = ''
 
 for i in range(30):
     global_map.append([Cell() for j in range(30)])
@@ -61,7 +73,7 @@ for i in range(10):
     x = random.randint(0, 29)
     y = random.randint(0, 29)
     global_map[x][y].type = '='
-global_map[4][5].type = '♦'  # сурикаты
+global_map[suricat.x][suricat.y].type = '♦'  # сурикаты
 
 
 @route('/')
@@ -71,7 +83,7 @@ def index():
 
 @route('/at/<x>/<y>')
 def index(x, y):
-    global global_map, player, page
+    global global_map, player, suricat
     map = '<center> Карта: </center> <br>'
 
     x = int(x)
@@ -114,6 +126,9 @@ def index(x, y):
         else:
             page += '<br/>На востоке {}'.format(global_map[x][y + 1].get_cell_type())
 
+    # передвижение сурикатов
+    suricat.walking()
+
     # map by Romanzi (Рома)
     for i in range(30):
         for j in range(30):
@@ -121,6 +136,12 @@ def index(x, y):
                 map += "☺"
             else:
                 map += global_map[i][j].get_cell_string()
+            ####
+            if i == suricat.x and j == suricat.y:
+                map += '♦'
+            else:
+                map += global_map[i][j].get_cell_string()
+
         map += '<br>'
     page += '<pre><code><center>' + map + '</center></code></pre>' #вставляем карту
     page += '<b> Легенда карты: <br><br> ☺ - игрок <br> = - озеро<br> * - кусты<br> # - природная стена и скалы' \
