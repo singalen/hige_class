@@ -11,6 +11,7 @@ from bottle import route, run, template
 class Cell:
     def __init__(self, description, x, y):
         self.description = description
+        self.items = []
         self.gold = 0
         self.x = x
         self.y = y
@@ -27,10 +28,18 @@ class Cell:
         return ''
 
     def actions(self, player):
-        return []
+        return dict()
 
     def is_passable(self, player):
         return True
+
+    def with_gold(self, gold):
+        self.gold = gold
+        return self
+
+    def with_thing(self, item):
+        self.items.append(item)
+        return self
 
 
 class PlainsCell(Cell):
@@ -39,6 +48,27 @@ class PlainsCell(Cell):
 
     def on_enter(self, player):
         player.strength -= 0.01
+        return super().on_enter(player)
+
+
+class MonsterCell(PlainsCell):
+    def __init__(self, x, y, n):
+        super().__init__(x, y, n)
+        self.description = 'Чудовище!'
+        self.monster_gold = n % 10
+        self.strength = (n // 10) * 3
+
+    def actions(self, player):
+        actions = [
+            {'id': 'fight', 'name': 'Сражаться'},
+        ]
+        if ThingTypes.HELMET in player.inventory:
+            actions.append({'id': 'hide', 'name': 'спрятаться под Шлемом'})
+        else:
+            actions.append({'id': 'escape', 'name': 'Сбежать'})
+        return actions
+
+    def on_enter(self, player):
         return super().on_enter(player)
 
 
@@ -78,25 +108,31 @@ def cell_factory(x, y, n):
     if 182 <= n <= 200:
         return RockCell(x, y, n)
     if 179 <= n <= 181:
-        result = WaterCell(x, y, n)
-        if n == 181:
-            result.gold = 1
-        return result
+        return WaterCell(x, y, n).with_gold(1 if n == 181 else 0)
     if 171 <= n <= 178:
         return SwampCell(x, y, n)
-    if 171 <= n <= 178:
-        return SwampCell(x, y, n)
+    if ThingTypes.FIRST <= n <= ThingTypes.LAST:
+        return PlainsCell(x, y, n).with_thing(n)
+    if 10 <= n <= 109:
+        return MonsterCell(x, y, n)
 
-    result = PlainsCell(x, y, n)
-    if n == 130 or random.randint(0, 7) == 7:
-        result.gold = 1
-    return result
+    return PlainsCell(x, y, n).with_gold(1 if n == 130 or random.randint(0, 7) == 7 else 0)
 
 
 class ThingTypes:
-    BOAT = 141
+    FIRST = 131
+    AXE = 131
+    SWORD = 132
+    SPEAR = 133
+    HELMET = 134
     COAT = 135
-    BOMB = 193
+    BOOTS = 136
+    KEY = 137
+    MAP = 138
+    BOMB = 139
+    OAR = 140
+    BOAT = 141
+    LAST = 141
 
 
 class Player:
@@ -115,7 +151,7 @@ def make_global_map():
     m = []
     SIZE = 20
     for i in range(SIZE):
-        m.append([cell_factory(random.randint(130, 200), i, j) for j in range(SIZE)])
+        m.append([cell_factory(i, j, random.randint(10, 200)) for j in range(SIZE)])
 
     for i in range(SIZE):
         m[i][SIZE//2] = WaterCell(i, SIZE//2, random.randint(180, 181))
@@ -146,9 +182,12 @@ def index(x, y):
 
     page += "{}<hr/> Вы находитесь в точке ({}, {}).<br/>Здесь: {}.<hr/>".format(player, x, y, cell)
 
+    for action in cell.actions(player):
+        page += '<a href="/at/{}/{}/{}">{}</a><br/>'.format(x, y, action['id'], action['name'])
+
     if x > 0:
         if global_map[x-1][y].is_passable(player):
-            page += '<br/><a href="/at/{:d}/{}">Идти на север</a>'.format(x-1, y)
+            page += '<br/><a href="/at/{}/{}">Идти на север</a>'.format(x-1, y)
         else:
             page += '<br/>На севере {}'.format(global_map[x-1][y])
     if x < len(global_map)-1:
