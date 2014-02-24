@@ -47,7 +47,7 @@ class Suricat:
         self.x = 4
         self.y = 5
 
-    def walking(self):
+    def walking(self): # двигаем сурикатов
         step_x = random.randint(-1, 1)
         step_y = random.randint(-1, 1)
         self.x += step_x
@@ -135,13 +135,11 @@ def index(x, y):
             if i == x and j == y:
                 map += "☺"
             else:
-                map += global_map[i][j].get_cell_string()
+                if i == suricat.x and j == suricat.y:
+                    map += '♦'
+                else:
+                    map += global_map[i][j].get_cell_string()
             ####
-            if i == suricat.x and j == suricat.y:
-                map += '♦'
-            else:
-                map += global_map[i][j].get_cell_string()
-
         map += '<br>'
     page += '<pre><code><center>' + map + '</center></code></pre>' #вставляем карту
     page += '<b> Легенда карты: <br><br> ☺ - игрок <br> = - озеро<br> * - кусты<br> # - природная стена и скалы' \
