@@ -23,6 +23,8 @@ class Cell:
         if self.type == '#':
             return 'стена <br><br> ' \
                       '<center><img src="http://pohodushki.org/ru/reports/krasnodon-walls-and-volnuhino-quarry/images/krasnodon-walls-and-volnuhino-quarry-2483x640x480x0.jpg"/></center>'
+        if self.type == '♦':
+            return '<b>дом сурикатов</b><br><br> <center> <img src="http://fotogaleri.ntvmsnbc.com/Assets/PhotoGallery/Pictures/0000164064.jpg"/></center>'
         return 'чисто поле'
     def get_cell_string(self):
         return self.type
@@ -30,14 +32,15 @@ class Cell:
     def is_passable(self):
         return self.type not in ['=', '#']
 
-
 class Player:
     def __init__(self):
         self.inventory = []
-
+        self.grass = 0
+        self.gold = 0
 
 player = Player()
 global_map = []
+
 for i in range(30):
     global_map.append([Cell() for j in range(30)])
 
@@ -53,6 +56,7 @@ for i in range(10):
     x = random.randint(0, 29)
     y = random.randint(0, 29)
     global_map[x][y].type = '='
+global_map[4][5].type = '♦'  # сурикаты
 
 @route('/')
 def index():
@@ -60,16 +64,22 @@ def index():
 
 @route('/at/<x>/<y>')
 def index(x, y):
-    global global_map
+    global global_map, player
     map = '<center> Карта: </center> <br>'
 
     x = int(x)
     y = int(y)
     cell = global_map[x][y]
 
-    page = "Вы находитесь в точке ({}, {}). Здесь {}. <hr/>".format(x, y, cell.get_cell_type()) + \
-        " Здесь есть: " + \
-        "ничего." + "<hr/>"
+    page = "Вы находитесь в точке ({}, {}). Здесь {}. <hr/>".format(x, y, cell.get_cell_type()) + "<hr/>"
+
+    # продажа трав
+    page = sold_grass(player, page)
+
+    # вывод ресурсов
+    page += "<br><b>" + make_grass() + "</b><br>"
+    page += "<br><b>У вас " + str(player.gold) + " золота</b><br>"
+    page += "<b>У вас " + str(player.grass) + " трав</b><br>"
 
     # движение
     if x > 0:
@@ -94,6 +104,26 @@ def index(x, y):
             page += '<br/>На востоке {}'.format(global_map[x][y+1].get_cell_type())
 
     # map by Romanzi (Рома)
+    page = create_map(page, map)
+    return page
+
+def make_grass():
+    global player
+    if random.randint(0, 4) == 1:
+        grass = random.randint(1, 5)
+        player.grass += grass
+        return "Вы нашли " + str(grass) + " полезных трав(у)(ы) (их можно продать на месте старта)"
+    return "К сожалению, тут нет полезных предметов"
+
+def sold_grass(player, page):
+    if x == 0 and y == 0:
+        if player.grass != 0:
+            player.gold += player.grass * 2 # 2 золота за 1 травинку
+            player.grass = 0
+            page += "<br><b>Вы продали все травы<b></red><br>"
+    return page
+
+def create_map(page, map):
     for i in range(30):
         for j in range(30):
             if i == x and j == y:
@@ -101,8 +131,11 @@ def index(x, y):
             else:
                 map += global_map[i][j].get_cell_string()
         map += '<br>'
-    page += '<pre><code><center>' + map + '</center></code></pre>' #пробуем вставить карту
-
+    page += '<pre><code><center>' + map + '</center></code></pre>' #вставляем карту
+    page += '<b> Легенда карты: <br><br> ☺ - игрок <br> = - озеро<br> * - кусты<br> # - природная стена и скалы' \
+            '<br> ♦ - сурикаты</b>'
     return page
+
+
 
 run(host='localhost', port=8080)
