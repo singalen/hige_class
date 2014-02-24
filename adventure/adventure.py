@@ -12,7 +12,7 @@ class Cell:
 
     def get_cell_type(self):
         if self.type == '_':
-            return 'равнина <br><br> ' \
+            return 'степь <br><br> ' \
                    '<center><img src="http://images2.wikia.nocookie.net/__cb20080409130942/starwars/images/f/f1/Great_Grass_Plains.jpg"/> </center>'
         if self.type == '*':
             return 'кусты <br><br> ' \
@@ -24,8 +24,11 @@ class Cell:
             return 'природная стена и скалы <br><br> ' \
                    '<center><img src="http://pohodushki.org/ru/reports/krasnodon-walls-and-volnuhino-quarry/images/krasnodon-walls-and-volnuhino-quarry-2483x640x480x0.jpg"/></center>'
         if self.type == '♦':
-            return '<b>сурикаты</b><br><br> ' \
+            return 'находятся <b>сурикаты</b><br><br> ' \
                    '<center> <img src="http://fotogaleri.ntvmsnbc.com/Assets/PhotoGallery/Pictures/0000164064.jpg"/></center>'
+        if self.type == '&':
+            return 'находятся <b>змеи</b>, они хотят напасть на Вас. Примите бой с честью.' \
+                   '<center><img src="http://www.xakac.info/sites/default/files/d21c50880735.jpg?1290479818"/></center>'
         return 'степь'
 
     def get_cell_string(self):
@@ -43,6 +46,10 @@ class Player:
         self.attack = 5
         self.grass = 0
         self.gold = 0
+
+    def attack(self):
+        power = random.randint(0, self.attack)
+        return power
 
 
 class Suricat:
@@ -63,11 +70,16 @@ class Snake:
         self.y = 10
         self.health = 30
         self.max_health = 30
-        self.attack = 5
+        self.attack = 4
+
+    def attack(self):
+        power = random.randint(0, self.attack)
+        return power
 
 
 player = Player()
 suricat = Suricat()
+snake = Snake()
 global_map = []
 
 for i in range(30):
@@ -86,23 +98,25 @@ for i in range(10):
     y = random.randint(0, 29)
     global_map[x][y].type = '='
 global_map[suricat.x][suricat.y].type = '♦'  # сурикаты
+global_map[snake.x][snake.y].type = '&' # змеи
 
 
 @route('/')
 def index():
-    return 'Добро пожаловать в матрицу! <a href="/at/0/0">Вход здесь</a>, выхода нет.'
+    return 'Добро пожаловать в матрицу! <a href="/at/0/0">Вход здесь</a>, выхода нет. <br>' \
+           'Собирайте и продавайте полезные травы, сражайтесь со змеями и торгуйте с сурикатами!'
 
 
 @route('/at/<x>/<y>')
 def index(x, y):
-    global global_map, player, suricat
+    global global_map, player, suricat, snake
     map = '<center> Карта: </center> <br>'
 
     x = int(x)
     y = int(y)
     cell = global_map[x][y]
 
-    page = "Здоровье: <b>" + str(player.health) + "/" +str(player.max_health) + \
+    page = "Здоровье: <b>" + str(player.health) + "/" + str(player.max_health) + \
            "</b>      Золото: <b>" + str(player.gold) + "</b>      Травы: <b>" + str(player.grass)
     page += "</b><br> Вы находитесь в точке ({}, {}). Здесь {}. <hr/>".format(x, y, cell.get_cell_type()) + "<hr/>"
 
@@ -151,11 +165,10 @@ def index(x, y):
                     map += '♦'
                 else:
                     map += global_map[i][j].get_cell_string()
-            ####
         map += '<br>'
     page += '<pre><code><center>' + map + '</center></code></pre>' #вставляем карту
     page += '<b> Легенда карты: <br><br> ☺ - игрок <br> = - озеро<br> * - кусты<br> # - природная стена и скалы' \
-            '<br> ♦ - сурикаты</b>'
+            '<br> ♦ - сурикаты <br> & - змеи</b>'
 
     return page
 
