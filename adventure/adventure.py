@@ -1,6 +1,7 @@
 # coding=utf-8
 import random
 from bottle import route, run, template, request
+from adventure.bottle import static_file
 
 
 class Cell:
@@ -12,24 +13,25 @@ class Cell:
 
     def get_cell_type(self):
         if self.type == '_':
-            return 'степь <br><br> ' \
-                   '<center><img src="http://images2.wikia.nocookie.net/__cb20080409130942/starwars/images/f/f1/Great_Grass_Plains.jpg"/> </center>'
+            return template('степь <br><br> ' \
+                            '<center><img src="{{img}}"/> </center>', img=getImg('step.jpg'))
         if self.type == '*':
-            return 'кусты <br><br> ' \
-                   '<center><img src="http://nature.baikal.ru/phs/norm/10/10250.jpg"/> </center>'
+            return template('кусты <br><br> ' \
+                            '<center><img src="{{img}}"/> </center>', img=getImg('bush.jpg'))
         if self.type == '=':
-            return 'озеро <br><br> ' \
-                   '<center><img src="http://stat18.privet.ru/lr/0b1c4dfd0bf718666448823c8401546c"/> </center>'
+            return template('озеро <br><br> ' \
+                            '<center><img src="{{img}}"/> </center>', img=getImg('lake.jpg'))
         if self.type == '#':
-            return 'природная стена и скалы <br><br> ' \
-                   '<center><img src="http://pohodushki.org/ru/reports/krasnodon-walls-and-volnuhino-quarry/images/krasnodon-walls-and-volnuhino-quarry-2483x640x480x0.jpg"/></center>'
+            return template('природная стена и скалы <br><br> ' \
+                            '<center><img src="{{img}}"/></center>', img='wall.jpg')
         if self.type == '♦':
-            return 'находятся <b>сурикаты</b><br><br> ' \
-                   '<center> <img src="http://fotogaleri.ntvmsnbc.com/Assets/PhotoGallery/Pictures/0000164064.jpg"/></center>'
+            return template('находятся <b>сурикаты</b><br><br> ' \
+                            '<center> <img src="{{img}}"/></center>', img='suricat.jpg')
         if self.type == '&':
-            return 'находятся <b>змеи</b>, они хотят напасть на Вас. Примите бой с честью.' \
-                   '<center><img src="http://www.xakac.info/sites/default/files/d21c50880735.jpg?1290479818"/>' \
-                   '<br><form method="POST" action="/battle"><input type="submit" name="submit" value="Удар!"></form></center>'
+            return template('находятся <b>змеи</b>, они хотят напасть на Вас. Примите бой с честью.' \
+                            '<center><img src="{{img}}"/>' \
+                            '<br><form method="POST" action="/battle"><input type="submit" name="submit" value="Удар!"></form></center>',
+                            img='snake.jpg')
         return 'степь'
 
     def get_cell_string(self):
@@ -110,8 +112,6 @@ def index():
 
 @route('/battle', method='POST')
 def battle():
-    #action = request.forms.get('submit')
-    #if action == 'submit':
     global player, snake, global_map
     s_attack = snake.attacking()
     p_attack = player.attacking()
@@ -125,12 +125,14 @@ def battle():
         player.gold = 0
         player.grass = 0
         player.health = 2
-        return '<b>Увы, но Вы проиграли. Но вы выижили и потеряли все свои деньги.</b><br><br>' + index(snake.x, snake.y)
+        return '<b>Увы, но Вы проиграли. Но вы выижили и потеряли все свои деньги.</b><br><br>' + index(snake.x,
+                                                                                                        snake.y)
     return 'Здоровье: <b> ' + str(player.health) + '/' + str(player.max_health) + '\
            </b>      Золото: <b> ' + str(player.gold) + '</b>      Травы: <b>' + str(player.grass) + \
            '<center><img src="http://www.xakac.info/sites/default/files/d21c50880735.jpg?1290479818"/>' \
            '<br><form method="POST" action="/battle"><input type="submit" name="submit" value="Удар!"></form></center>' \
-           '<br> <b>Вы нанесли ' + str(p_attack) + ' урона. <br> Враг нанёс ' + str(s_attack) + ' урона. </b>'
+           '<br> <center><b>Вы нанесли ' + str(p_attack) + ' урона. <br> Враг нанёс ' + str(
+        s_attack) + ' урона.</center> </b>'
 
 
 @route('/at/<x>/<y>')
@@ -206,6 +208,11 @@ def make_grass():
         player.grass += grass
         return "Вы нашли " + str(grass) + " полезных трав(у)(ы) (их можно продать на месте старта)"
     return "К сожалению, тут нет полезных предметов"
+
+
+@route("/images/<filename>")
+def getImg(filename):
+    return static_file(filename, root='image')
 
 
 run(host='localhost', port=8080)
