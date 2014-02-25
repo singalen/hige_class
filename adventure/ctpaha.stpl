@@ -1,0 +1,29 @@
+<html>
+<body>
+    {{entered_result}}
+    <hr/>
+    % if player.strength <= 0:
+        <hr/>Вы умерли!..
+    % else:
+        {{player}}
+        <hr/>
+        Вы находитесь в точке ({{x}}, {{y}}).
+        <br/>
+        Здесь: {{cell}}.
+        <hr/>
+
+        % for action in cell.actions(player):
+            <a href="/at/{{x}}/{{y}}/{{action['id']}}">{{action['name']}}</a><br/>
+        % end
+
+        % for d in directions:
+            На {{d.name}}: {{global_map[x+d.dx][y+d.dy]}}
+            % if global_map[x+d.dx][y+d.dy].is_passable(player):
+                <a href="/at/{{x+d.dx}}/{{y+d.dy}}">Идти на {{d.name}}</a>
+            % end
+            <br/>
+        % end
+
+    % end
+</body>
+</html>

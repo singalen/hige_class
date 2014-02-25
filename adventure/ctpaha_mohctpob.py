@@ -25,7 +25,7 @@ class Cell:
             result = 'Вы нашли {} золота!'.format(self.gold)
             self.gold = 0
             return result
-        return ''
+        return 'Степь да степь кругом...'
 
     def actions(self, player):
         return dict()
@@ -68,9 +68,6 @@ class MonsterCell(PlainsCell):
             actions.append({'id': 'escape', 'name': 'Сбежать'})
         return actions
 
-    def on_enter(self, player):
-        return super().on_enter(player)
-
 
 class SwampCell(PlainsCell):
     def __init__(self, x, y, n):
@@ -100,7 +97,7 @@ class RockCell(Cell):
 
         if ThingTypes.BOMB in player.inventory:
             global_map[self.x][self.y] = PlainsCell(111, self.x, self.y)
-            result += '<br/>Вы взорвали скалу бомбой!' + global_map[self.x][self.y].on_enter(player)
+            result += '\nВы взорвали скалу бомбой!' + global_map[self.x][self.y].on_enter(player)
         return result
 
 
@@ -162,6 +159,22 @@ player = Player()
 global_map = make_global_map()
 
 
+class Direction:
+    def __init__(self, name, dx, dy):
+        self.name = name
+        self.dx = dx
+        self.dy = dy
+
+
+class Directions:
+    ALL = [Direction('север', 0, -1), Direction('юг', 0, 1), Direction('восток', 1, 0), Direction('запад', -1, 0)]
+
+    @staticmethod
+    def for_xy(x, y):
+        return [d for d in Directions.ALL
+                if 0 <= x+d.dx < len(global_map) and 0 <= y+d.dy < len(global_map) ]
+
+
 @route('/')
 def index():
     return 'Добро пожаловать в матрицу! <a href="/at/0/0">Вход здесь</a>, выхода нет.'
@@ -175,37 +188,16 @@ def index(x, y):
     y = int(y)
     cell = global_map[x][y]
 
-    page = (cell.on_enter(player) or 'Вот вы и здесь.') + '<hr/>'
-
-    if player.strength <= 0:
-        return page + '<hr/>Вы умерли!..'
-
-    page += "{}<hr/> Вы находитесь в точке ({}, {}).<br/>Здесь: {}.<hr/>".format(player, x, y, cell)
-
-    for action in cell.actions(player):
-        page += '<a href="/at/{}/{}/{}">{}</a><br/>'.format(x, y, action['id'], action['name'])
-
-    if x > 0:
-        if global_map[x-1][y].is_passable(player):
-            page += '<br/><a href="/at/{}/{}">Идти на север</a>'.format(x-1, y)
-        else:
-            page += '<br/>На севере {}'.format(global_map[x-1][y])
-    if x < len(global_map)-1:
-        if global_map[x+1][y].is_passable(player):
-            page += '<br/><a href="/at/{}/{}">Идти на юг</a>'.format(x+1, y)
-        else:
-            page += '<br/>На юге {}'.format(global_map[x+1][y])
-    if y > 0 and global_map[x][y-1].is_passable(player):
-        if global_map[x][y-1].is_passable(player):
-            page += '<br/><a href="/at/{}/{}">Идти на запад</a>'.format(x, y-1)
-        else:
-            page += '<br/>На западе {}'.format(global_map[x][y-1])
-    if y < len(global_map[x])-1:
-        if global_map[x][y+1].is_passable(player):
-            page += '<br/><a href="/at/{}/{}">Идти на восток</a>'.format(x, y+1)
-        else:
-            page += '<br/>На востоке {}'.format(global_map[x][y+1])
-
+    page = template(
+        'ctpaha.stpl',
+        entered_result=cell.on_enter(player) or 'Вот вы и здесь.',
+        player=player,
+        x=x, y=y,
+        cell=cell,
+        global_map=global_map,
+        directions=Directions.for_xy(x, y))
     return page
 
-run(host='localhost', port=8090)
+
+if __name__ == '__main__':
+    run(host='localhost', port=8090)
