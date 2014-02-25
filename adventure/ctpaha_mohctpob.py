@@ -65,7 +65,7 @@ class MonsterCell(PlainsCell):
         if ThingTypes.HELMET in player.inventory:
             actions.append({'id': 'hide', 'name': 'спрятаться под Шлемом'})
         else:
-            actions.append({'id': 'escape', 'name': 'Сбежать'})
+            actions.append({'id': 'flee', 'name': 'Сбежать'})
         return actions
 
 
@@ -143,6 +143,22 @@ class Player:
             'У вас ничего нет!' if not self.inventory else \
             'У вас есть: <ul><li>' + '</li><li>'.join(self.inventory) + '</li></ul>'
 
+    def fight(self, monster):
+        player_strength = self.strength + random.randint(1, 6)
+        monster_strength = monster.strength + random.randint(1, 6)
+        if ThingTypes.SPEAR in player.inventory:
+            player_strength += 3
+        elif ThingTypes.SWORD in player.inventory:
+            player_strength += 2
+        elif ThingTypes.AXE in player.inventory:
+            player_strength += 1
+
+        if player_strength > monster_strength:
+            return 'Вы победили!', [{'id': 'tax', 'name': 'Взять деньгами'}, {'id': 'kill', 'name': 'Убить чудовище'}]
+        else:
+            return 'Вы проиграли!', \
+                   [{'id': 'buyout', 'name': 'Откупиться 1 куском золота'}, {'id': 'punch', 'name': 'Получить щелбан'}]
+
 
 def make_global_map():
     m = []
@@ -188,15 +204,63 @@ def index(x, y):
     y = int(y)
     cell = global_map[x][y]
 
-    page = template(
+    return template(
         'ctpaha.stpl',
-        entered_result=cell.on_enter(player) or 'Вот вы и здесь.',
+        action_result=cell.on_enter(player) or 'Вот вы и здесь.',
+        actions=cell.actions(player),
         player=player,
         x=x, y=y,
         cell=cell,
         global_map=global_map,
         directions=Directions.for_xy(x, y))
-    return page
+
+
+@route('/at/<x>/<y>/fight')
+def fight(x, y):
+    global global_map
+    x = int(x)
+    y = int(y)
+    cell = global_map[x][y]
+
+    if cell is not MonsterCell:
+        raise ValueError('Тут должно было быть Чудовище, но я его потерял...')
+
+    fight_message, actions = player.fight(cell)
+
+    return template(
+        'ctpaha.stpl',
+        action_result=cell.on_enter(player) or 'Вот вы и здесь.',
+        actions=actions,
+        player=player,
+        x=x, y=y,
+        cell=cell,
+        global_map=global_map,
+        directions=Directions.for_xy(x, y))
+
+
+@route('/at/<x>/<y>/flee')
+def flee(x, y):
+    global global_map
+    x = int(x)
+    y = int(y)
+    cell = global_map[x][y]
+    # TODO: бежать в другую ячейку
+
+    if cell is not MonsterCell:
+        raise ValueError('Тут должно было быть Чудовище, но я его потерял...')
+
+    player.strength -= 0.5
+
+    return template(
+        'ctpaha.stpl',
+        action_result='Вы сбежали от Чудовища, потеряв 0.5 Силы',
+        actions=[],
+        player=player,
+        x=x, y=y,
+        cell=cell,
+        global_map=global_map,
+        directions=Directions.for_xy(x, y))
+
 
 
 if __name__ == '__main__':

@@ -1,6 +1,6 @@
 <html>
 <body>
-    {{entered_result}}
+    {{action_result}}
     <hr/>
     % if player.strength <= 0:
         <hr/>Вы умерли!..
@@ -12,7 +12,7 @@
         Здесь: {{cell}}.
         <hr/>
 
-        % for action in cell.actions(player):
+        % for action in cell.actions:
             <a href="/at/{{x}}/{{y}}/{{action['id']}}">{{action['name']}}</a><br/>
         % end
 
