@@ -1,6 +1,6 @@
 # coding=utf-8
 import random
-from bottle import route, run, template
+from bottle import route, run, template, request
 
 
 class Cell:
@@ -28,7 +28,8 @@ class Cell:
                    '<center> <img src="http://fotogaleri.ntvmsnbc.com/Assets/PhotoGallery/Pictures/0000164064.jpg"/></center>'
         if self.type == '&':
             return 'находятся <b>змеи</b>, они хотят напасть на Вас. Примите бой с честью.' \
-                   '<center><img src="http://www.xakac.info/sites/default/files/d21c50880735.jpg?1290479818"/></center>'
+                   '<center><img src="http://www.xakac.info/sites/default/files/d21c50880735.jpg?1290479818"/>' \
+                   '<br><form method="POST" action="/battle"><input type="submit" name="submit" value="Удар!"></form></center>'
         return 'степь'
 
     def get_cell_string(self):
@@ -47,7 +48,7 @@ class Player:
         self.grass = 0
         self.gold = 0
 
-    def attack(self):
+    def attacking(self):
         power = random.randint(0, self.attack)
         return power
 
@@ -72,7 +73,7 @@ class Snake:
         self.max_health = 30
         self.attack = 4
 
-    def attack(self):
+    def attacking(self):
         power = random.randint(0, self.attack)
         return power
 
@@ -105,6 +106,31 @@ global_map[snake.x][snake.y].type = '&' # змеи
 def index():
     return 'Добро пожаловать в матрицу! <a href="/at/0/0">Вход здесь</a>, выхода нет. <br>' \
            'Собирайте и продавайте полезные травы, сражайтесь со змеями и торгуйте с сурикатами!'
+
+
+@route('/battle', method='POST')
+def battle():
+    #action = request.forms.get('submit')
+    #if action == 'submit':
+    global player, snake, global_map
+    s_attack = snake.attacking()
+    p_attack = player.attacking()
+    player.health = player.health - s_attack
+    snake.health = snake.health - p_attack
+    if snake.health < 1:
+        player.gold += 20
+        global_map[snake.x][snake.y].type = '_'
+        return '<b>Поздравляю, Вы победили! И за победу получаете 20 золота!</b><br><br>' + index(snake.x, snake.y)
+    if player.health < 1:
+        player.gold = 0
+        player.grass = 0
+        player.health = 2
+        return '<b>Увы, но Вы проиграли. Но вы выижили и потеряли все свои деньги.</b><br><br>' + index(snake.x, snake.y)
+    return 'Здоровье: <b> ' + str(player.health) + '/' + str(player.max_health) + '\
+           </b>      Золото: <b> ' + str(player.gold) + '</b>      Травы: <b>' + str(player.grass) + \
+           '<center><img src="http://www.xakac.info/sites/default/files/d21c50880735.jpg?1290479818"/>' \
+           '<br><form method="POST" action="/battle"><input type="submit" name="submit" value="Удар!"></form></center>' \
+           '<br> <b>Вы нанесли ' + str(p_attack) + ' урона. <br> Враг нанёс ' + str(s_attack) + ' урона. </b>'
 
 
 @route('/at/<x>/<y>')
