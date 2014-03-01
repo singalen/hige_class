@@ -13,24 +13,25 @@ class Cell:
     def get_cell_type(self):
         if self.type == '_':
             return template('степь <br><br> ' \
-                            '<center><img src="{{img}}"/> </center>', img=getImg('step.jpg'))
+                            '<center><img src="/images/{{img}}"/> </center>', img='step.jpg')
         if self.type == '*':
             return template('кусты <br><br> ' \
-                            '<center><img src="{{img}}"/> </center>', img=getImg('bush.jpg'))
+                            '<center><img src="/images/{{img}}"/> </center>', img='bush.jpg')
         if self.type == '=':
             return template('озеро <br><br> ' \
-                            '<center><img src="{{img}}"/> </center>', img=getImg('lake.jpg'))
+                            '<center><img src="/images/{{img}}"/> </center>', img='lake.jpg')
         if self.type == '#':
             return template('природная стена и скалы <br><br> ' \
-                            '<center><img src="{{img}}"/></center>', img=getImg('wall.jpg'))
+                            '<center><img src="/images/{{img}}"/></center>', img='wall.jpg')
         if self.type == '♦':
             return template('находятся <b>сурикаты</b><br><br> ' \
-                            '<center> <img src="{{img}}"/></center>', img=getImg('suricat.jpg'))
+                            '<center> <img src="/images/{{img}}"/>' \
+                            '<br><form method="POST" action="/health"><input type="submit" name="submit" value="Пополнить здоровье"></form>' \
+                            '<br><form method="POST" action="/maxhealth"><input type="submit" name="submit" value="Купить зелье для повышения здоровья"></form></center>', img='suricat.jpg')
         if self.type == '&':
             return template('находятся <b>змеи</b>, они хотят напасть на Вас. Примите бой с честью.' \
-                            '<center><img src="{{img}}"/>' \
-                            '<br><form method="POST" action="/battle"><input type="submit" name="submit" value="Удар!"></form></center>',
-                            img=getImg('snake.jpg'))
+                            '<center><img src="/images/{{img}}"/>' \
+                            '<br><form method="POST" action="/battle"><input type="submit" name="submit" value="Удар!"></form>', img='snake.jpg')
         return 'степь'
 
     def get_cell_string(self):
@@ -48,6 +49,8 @@ class Player:
         self.attack = 5
         self.grass = 0
         self.gold = 0
+        self.x = 0
+        self.y = 0
 
     def attacking(self):
         power = random.randint(0, self.attack)
@@ -55,9 +58,9 @@ class Player:
 
 
 class Suricat:
-    def __init__(self):
-        self.x = 4
-        self.y = 5
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
 
     def walking(self): # двигаем сурикатов
         step_x = random.randint(-1, 1)
@@ -67,9 +70,9 @@ class Suricat:
 
 
 class Snake:
-    def __init__(self):
-        self.x = 10
-        self.y = 10
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
         self.health = 30
         self.max_health = 30
         self.attack = 4
@@ -80,8 +83,8 @@ class Snake:
 
 
 player = Player()
-suricat = Suricat()
-snake = Snake()
+suricat = Suricat(4, 5)
+snake = Snake(10, 10)
 global_map = []
 
 for i in range(30):
@@ -105,8 +108,31 @@ global_map[snake.x][snake.y].type = '&' # змеи
 
 @route('/')
 def index():
-    return template('Добро пожаловать в матрицу! <a href="/at/1/1">Вход здесь</a>, выхода нет. <br>' \
-                    'Собирайте и продавайте полезные травы, сражайтесь со змеями и торгуйте с сурикатами!')
+    return 'Добро пожаловать в матрицу! <a href="/at/1/1">Вход здесь</a>, выхода нет. <br>' \
+                    'Собирайте и продавайте полезные травы, сражайтесь со змеями и торгуйте с сурикатами!'
+
+
+@route('/health', method='POST')
+def health():
+    global player
+    if player.gold > 10 and player.health < 30:
+        player.gold -= 10
+        player.health = player.max_health
+        return 'Вы были вылечены сурикатами за <b>10</b> золота<br><br>' + index(player.x, player.y)
+    else:
+        return 'У вас должно быть <b>10</b> золота для этого или вы здоровы<br><br>' + index(player.x, player.y)
+
+@route('/maxhealth', method='POST')
+def maxhealth():
+    global player
+    if player.gold > 20:
+        player.gold -= 20
+        player.max_health = 50
+        player.health = player.max_health
+        return 'Вы купили у сурикатов зелье, которое увеличило вашу мощь за 20 золота' + index(player.x, player.y)
+    else:
+        return 'У вас должно быть 20 золота для этого' + index(player.x, player.y)
+
 
 
 @route('/battle', method='POST')
@@ -131,7 +157,7 @@ def battle():
            '<center><img src="http://www.xakac.info/sites/default/files/d21c50880735.jpg?1290479818"/>' \
            '<br><form method="POST" action="/battle"><input type="submit" name="submit" value="Удар!"></form></center>' \
            '<br> <center><b>Вы нанесли ' + str(p_attack) + ' урона. <br> Враг нанёс ' + str(
-        s_attack) + ' урона.</center> </b>'
+        s_attack) + ' урона.</center> </b><br><br><center>Здоровье змеи: ' + str(snake.health) + '</center>'
 
 
 @route('/at/<x>/<y>')
@@ -142,6 +168,8 @@ def index(x, y):
     x = int(x)
     y = int(y)
     cell = global_map[x][y]
+    player.x = x
+    player.y = y
 
     page = "Здоровье: <b>" + str(player.health) + "/" + str(player.max_health) + \
            "</b>      Золото: <b>" + str(player.gold) + "</b>      Травы: <b>" + str(player.grass)
@@ -209,9 +237,9 @@ def make_grass():
     return "К сожалению, тут нет полезных предметов"
 
 
-@route("localhost:8080/images/<filename>")
+@route("/images/<filename>")
 def getImg(filename):
-    return static_file(filename, root='http://localhost:8080/images/')
+    return static_file(filename, root='images')
 
 
-run(host='localhost', port=8080)
+run(host='localhost', port=8080, quiet=False)
