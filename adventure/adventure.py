@@ -58,9 +58,9 @@ class Player:
 
 
 class Suricat:
-    def __init__(self):
-        self.x = 4
-        self.y = 5
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
 
     def walking(self): # двигаем сурикатов
         step_x = random.randint(-1, 1)
@@ -70,9 +70,9 @@ class Suricat:
 
 
 class Snake:
-    def __init__(self):
-        self.x = 10
-        self.y = 10
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
         self.health = 30
         self.max_health = 30
         self.attack = 4
@@ -83,8 +83,8 @@ class Snake:
 
 
 player = Player()
-suricat = Suricat()
-snake = Snake()
+suricat = Suricat(4, 5)
+snake = Snake(10, 10)
 global_map = []
 
 for i in range(30):
