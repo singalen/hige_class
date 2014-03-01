@@ -157,7 +157,7 @@ def battle():
            '<center><img src="http://www.xakac.info/sites/default/files/d21c50880735.jpg?1290479818"/>' \
            '<br><form method="POST" action="/battle"><input type="submit" name="submit" value="Удар!"></form></center>' \
            '<br> <center><b>Вы нанесли ' + str(p_attack) + ' урона. <br> Враг нанёс ' + str(
-        s_attack) + ' урона.</center> </b>'
+        s_attack) + ' урона.</center> </b><br><br><center>Здоровье змеи: ' + str(snake.health) + '</center>'
 
 
 @route('/at/<x>/<y>')
