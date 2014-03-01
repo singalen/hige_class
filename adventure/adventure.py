@@ -13,24 +13,24 @@ class Cell:
     def get_cell_type(self):
         if self.type == '_':
             return template('степь <br><br> ' \
-                            '<center><img src="{{img}}"/> </center>', img=getImg('step.jpg'))
+                            '<center><img src="/images/{{img}}"/> </center>', img='step.jpg')
         if self.type == '*':
             return template('кусты <br><br> ' \
-                            '<center><img src="{{img}}"/> </center>', img=getImg('bush.jpg'))
+                            '<center><img src="/images/{{img}}"/> </center>', img='bush.jpg')
         if self.type == '=':
             return template('озеро <br><br> ' \
-                            '<center><img src="{{img}}"/> </center>', img=getImg('lake.jpg'))
+                            '<center><img src="/images/{{img}}"/> </center>', img='lake.jpg')
         if self.type == '#':
             return template('природная стена и скалы <br><br> ' \
-                            '<center><img src="{{img}}"/></center>', img=getImg('wall.jpg'))
+                            '<center><img src="/images/{{img}}"/></center>', img='wall.jpg')
         if self.type == '♦':
             return template('находятся <b>сурикаты</b><br><br> ' \
-                            '<center> <img src="{{img}}"/></center>', img=getImg('suricat.jpg'))
+                            '<center> <img src="/images/{{img}}"/></center>', img='suricat.jpg')
         if self.type == '&':
             return template('находятся <b>змеи</b>, они хотят напасть на Вас. Примите бой с честью.' \
-                            '<center><img src="{{img}}"/>' \
+                            '<center><img src="/images/{{img}}"/>' \
                             '<br><form method="POST" action="/battle"><input type="submit" name="submit" value="Удар!"></form></center>',
-                            img=getImg('snake.jpg'))
+                            img='snake.jpg')
         return 'степь'
 
     def get_cell_string(self):
@@ -105,8 +105,8 @@ global_map[snake.x][snake.y].type = '&' # змеи
 
 @route('/')
 def index():
-    return template('Добро пожаловать в матрицу! <a href="/at/1/1">Вход здесь</a>, выхода нет. <br>' \
-                    'Собирайте и продавайте полезные травы, сражайтесь со змеями и торгуйте с сурикатами!')
+    return 'Добро пожаловать в матрицу! <a href="/at/1/1">Вход здесь</a>, выхода нет. <br>' \
+                    'Собирайте и продавайте полезные травы, сражайтесь со змеями и торгуйте с сурикатами!'
 
 
 @route('/battle', method='POST')
@@ -209,9 +209,9 @@ def make_grass():
     return "К сожалению, тут нет полезных предметов"
 
 
-@route("localhost:8080/images/<filename>")
+@route("/images/<filename>")
 def getImg(filename):
-    return static_file(filename, root='http://localhost:8080/images/')
+    return static_file(filename, root='images')
 
 
-run(host='localhost', port=8080)
+run(host='localhost', port=8080, quiet=False)
