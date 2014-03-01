@@ -25,12 +25,13 @@ class Cell:
                             '<center><img src="/images/{{img}}"/></center>', img='wall.jpg')
         if self.type == '♦':
             return template('находятся <b>сурикаты</b><br><br> ' \
-                            '<center> <img src="/images/{{img}}"/></center>', img='suricat.jpg')
+                            '<center> <img src="/images/{{img}}"/>' \
+                            '<br><form method="POST" action="/health"><input type="submit" name="submit" value="Пополнить здоровье"></form>' \
+                            '<br><form method="POST" action="/maxhealth"><input type="submit" name="submit" value="Купить зелье для повышения здоровья"></form></center>', img='suricat.jpg')
         if self.type == '&':
             return template('находятся <b>змеи</b>, они хотят напасть на Вас. Примите бой с честью.' \
                             '<center><img src="/images/{{img}}"/>' \
-                            '<br><form method="POST" action="/battle"><input type="submit" name="submit" value="Удар!"></form></center>',
-                            img='snake.jpg')
+                            '<br><form method="POST" action="/battle"><input type="submit" name="submit" value="Удар!"></form>', img='snake.jpg')
         return 'степь'
 
     def get_cell_string(self):
@@ -48,6 +49,8 @@ class Player:
         self.attack = 5
         self.grass = 0
         self.gold = 0
+        self.x = 0
+        self.y = 0
 
     def attacking(self):
         power = random.randint(0, self.attack)
@@ -109,6 +112,29 @@ def index():
                     'Собирайте и продавайте полезные травы, сражайтесь со змеями и торгуйте с сурикатами!'
 
 
+@route('/health', method='POST')
+def health():
+    global player
+    if player.gold > 10 and player.health < 30:
+        player.gold -= 10
+        player.health = player.max_health
+        return 'Вы были вылечены сурикатами за <b>10</b> золота<br><br>' + index(player.x, player.y)
+    else:
+        return 'У вас должно быть <b>10</b> золота для этого или вы здоровы<br><br>' + index(player.x, player.y)
+
+@route('/maxhealth', method='POST')
+def maxhealth():
+    global player
+    if player.gold > 20:
+        player.gold -= 20
+        player.max_health = 50
+        player.health = player.max_health
+        return 'Вы купили у сурикатов зелье, которое увеличило вашу мощь за 20 золота' + index(player.x, player.y)
+    else:
+        return 'У вас должно быть 20 золота для этого' + index(player.x, player.y)
+
+
+
 @route('/battle', method='POST')
 def battle():
     global player, snake, global_map
@@ -142,6 +168,8 @@ def index(x, y):
     x = int(x)
     y = int(y)
     cell = global_map[x][y]
+    player.x = x
+    player.y = y
 
     page = "Здоровье: <b>" + str(player.health) + "/" + str(player.max_health) + \
            "</b>      Золото: <b>" + str(player.gold) + "</b>      Травы: <b>" + str(player.grass)
