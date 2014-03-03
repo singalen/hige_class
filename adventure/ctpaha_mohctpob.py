@@ -222,14 +222,14 @@ def fight(x, y):
     y = int(y)
     cell = global_map[x][y]
 
-    if cell is not MonsterCell:
+    if not isinstance(cell, MonsterCell):
         raise ValueError('Тут должно было быть Чудовище, но я его потерял...')
 
     fight_message, actions = player.fight(cell)
 
     return template(
         'ctpaha.stpl',
-        action_result=cell.on_enter(player) or 'Вот вы и здесь.',
+        action_result=fight_message,
         actions=actions,
         player=player,
         x=x, y=y,
