@@ -51,4 +51,4 @@ class IsCrossesTest(unittest.TestCase):
             '...',
             '...',
         ]
-        self.assertFalse(foxcross.is_crosses(a))
+        self.assertTrue(foxcross.is_crosses(a))
