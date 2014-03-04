@@ -1,3 +1,4 @@
 
 def is_crosses(a):
-    return False
+    hash_count = sum([s.count('#') for s in a])
+    return hash_count % 5 == 0
