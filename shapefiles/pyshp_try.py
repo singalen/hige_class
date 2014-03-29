@@ -20,12 +20,22 @@ draw.rectangle(tuple([0, 0] + list(map_size)), fill='white')
 def point_to_image(p):
     return (p[0] - sf.bbox[0])*3, (p[1] - sf.bbox[1])*3,
 
-for s in sf.shapes()[:50]:
+for s in sf.shapes()[:10000]:
     if s.shapeType == 5:
         # print("parts[{}], s.points: {}".format(len(s.parts), s.points))
         points = [point_to_image(p) for p in s.points][:-2]
         draw.polygon(points, fill="green", outline="blue")
+
+count = len(sf.shapes())
+
+for i in range(count):
+    # sh = sf.shape(i)
+    try:
+        r = sf.record(i)
+        print(r[18])
+    except UnicodeDecodeError:
         pass
+
 filterOpt = Image.BICUBIC
 im = im.rotate(180, filterOpt)
 im = im.transpose(Image.FLIP_LEFT_RIGHT)
