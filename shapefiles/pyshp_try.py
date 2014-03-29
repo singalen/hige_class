@@ -26,5 +26,7 @@ for s in sf.shapes()[:50]:
         points = [point_to_image(p) for p in s.points][:-2]
         draw.polygon(points, fill="green", outline="blue")
         pass
-
+filterOpt = Image.BICUBIC
+im = im.rotate(180, filterOpt)
+im = im.transpose(Image.FLIP_LEFT_RIGHT)
 im.save('a.png')
