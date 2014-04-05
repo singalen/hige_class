@@ -16,7 +16,7 @@ map_size = (int(sf.bbox[2] - sf.bbox[0]) * 3, int(sf.bbox[3] - sf.bbox[1]) * 3,)
 im = Image.new('RGB', map_size)
 draw = ImageDraw.Draw(im)
 
-draw.rectangle(tuple([0, 0] + list(map_size)), fill='light blue')
+draw.rectangle(tuple([0, 0] + list(map_size)), fill='white')
 
 
 def point_to_image(p):
