@@ -1,3 +1,4 @@
+import random
 import shapefile
 from PIL import Image, ImageDraw
 
@@ -22,15 +23,37 @@ def point_to_image(p):
 
 for s in sf.shapes():
     gi = s.__geo_interface__
+
+    color = random.randint(0, 8)
+    colormap = "white"
+    if color == 0:
+        colormap="green"
+    if color == 1:
+        colormap="red"
+    if color == 2:
+        colormap="blue"
+    if color == 3:
+        colormap = "yellow"
+    if color == 4:
+        colormap = "pink"
+    if color == 5:
+        colormap = "black"
+    if color == 6:
+        colormap = "brown"
+    if color == 7:
+        colormap = "purple"
+    if color == 8:
+        colormap = "orange"
+
     if gi['type'] in ['LineString', 'Polygon']:
         for polygon in gi['coordinates']:
             points = [point_to_image(p) for p in polygon]
-            draw.polygon(points, fill="green", outline="blue")
+            draw.polygon(points, fill=colormap, outline="blue")
     elif gi['type'] == 'MultiPolygon':
         for multi_polygon in gi['coordinates']:
             for polygon in multi_polygon:
                 points = [point_to_image(p) for p in polygon]
-                draw.polygon(points, fill="green", outline="blue")
+                draw.polygon(points, fill=colormap, outline="blue")
 
 count = len(sf.shapes())
 for i in range(count):
