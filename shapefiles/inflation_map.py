@@ -1,15 +1,14 @@
 __author__ = 'Romanzi (Roman Sytnik)'
 
+import csv
+
+
 def read_inflation_file():
     inf_dict = {}
-    fh = open("data/pcpi_a.csv", 'r+', encoding='utf8')
-    while True:
-        inf_data = fh.readline()
-        if not inf_data:
-            break
-        inf_list = inf_data.split(',')
-        inf_dict[inf_list[3]] = inf_list[25]
-    fh.close()
+    with open("data/pcpi_a.csv", 'rt') as csvfile:
+        reader = csv.reader(csvfile, delimiter=',', quotechar='"')
+        for row in reader:
+            inf_dict[row[3]] = row[28]
     print(inf_dict["UKRAINE"])
     return inf_dict
 
