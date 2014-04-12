@@ -14,3 +14,4 @@ class SynonymsTest(unittest.TestCase):
         s = synonyms.Synonyms()
         self.assertTrue(s.are_equal('USA', 'United States of America'))
         self.assertFalse(s.are_equal('USA', 'Ukraine'))
+        self.assertTrue(s.are_equal('111', '111'))

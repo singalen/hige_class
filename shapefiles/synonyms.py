@@ -10,10 +10,12 @@ class Synonyms:
     def all_synonyms(self, a):
         for row in self.file:
             if a in row:
-               return row
+                return row
         return [a]
 
     def are_equal(self, a, b):
+        if a == b:
+            return True
         for row in self.file:
             if a in row and b in row:
                 return True
@@ -23,8 +25,8 @@ class Synonyms:
     def read_file(self, files):
         with open(files, 'rt') as csvfile:
             reader = csv.reader(csvfile, delimiter=',', quotechar='"')
-            new_reader = list(reader)
-            return new_reader
+            rows = list(reader)
+            return rows
 
 
 syn = Synonyms()
