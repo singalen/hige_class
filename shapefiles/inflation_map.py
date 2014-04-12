@@ -30,7 +30,7 @@ def read_inflation_file():
     with open("data/pcpi_a.csv", 'rt') as csvfile:
         reader = csv.reader(csvfile, delimiter=',', quotechar='"')
         inf_dict = {
-            row[3]: row[5]
+            row[3]: row[16]
             for row in reader
         }
     return inf_dict
