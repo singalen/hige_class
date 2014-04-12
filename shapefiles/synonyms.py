@@ -8,6 +8,7 @@ class Synonyms:
         self.file = self.read_file(filename)
 
     def all_synonyms(self, a):
+        a = a.upper()
         for row in self.file:
             if a in row:
                 return row
@@ -16,6 +17,8 @@ class Synonyms:
     def are_equal(self, a, b):
         if a == b:
             return True
+        a = a.upper()
+        b = b.upper()
         for row in self.file:
             if a in row and b in row:
                 return True
@@ -25,7 +28,7 @@ class Synonyms:
     def read_file(self, files):
         with open(files, 'rt') as csvfile:
             reader = csv.reader(csvfile, delimiter=',', quotechar='"')
-            rows = list(reader)
+            rows = [[s.upper() for s in row] for row in reader]
             return rows
 
 
