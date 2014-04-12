@@ -40,6 +40,12 @@ inf_dict = read_inflation_file()
 
 
 def coloring_map(country):
+
+    #global synonyms
+    #known_synonyms = [s for s in synonyms.all_synoyms(country) if s in inf_dict]
+    #if known_synonyms:
+    #    country = known_synonyms[0]
+
     try:
         color = float(inf_dict[country.upper()])
     except KeyError:
@@ -50,6 +56,8 @@ def coloring_map(country):
         color = 100
 
     colormap = "white"
+    if color < -1:
+        colormap = "orange"
     if 0 < color < 5:
         colormap = "gray"
     if 5 < color < 10:
