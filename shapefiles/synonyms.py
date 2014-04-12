@@ -2,28 +2,30 @@ import csv
 
 __author__ = 'Romanzi (Roman Sytnik)'
 
-file = None
-
-
-def read_file(files):
-    with open(files, 'rt') as csvfile:
-        reader = csv.reader(csvfile, delimiter=',', quotechar='"')
-        new_reader = list(reader)
-        return new_reader
-
 
 class Synonyms:
     def __init__(self, filename="synonyms.csv"):
-        global file
-        file = read_file(filename)
+        self.file = self.read_file(filename)
 
-    def equals(self, a):
-        global file
-        for row in file:
-            for i in range(len(row)):
-                if row[i] in a:
-                    return row
+    def all_synonyms(self, a):
+        for row in self.file:
+            if a in row:
+               return row
+        return [a]
+
+    def are_equal(self, a, b):
+        for row in self.file:
+            if a in row and b in row:
+                return True
+        return False
+
+
+    def read_file(self, files):
+        with open(files, 'rt') as csvfile:
+            reader = csv.reader(csvfile, delimiter=',', quotechar='"')
+            new_reader = list(reader)
+            return new_reader
 
 
 syn = Synonyms()
-print(syn.equals("USA"))
+print(syn.are_equal("USA", "United States of America"))
