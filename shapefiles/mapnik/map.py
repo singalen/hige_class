@@ -6,7 +6,7 @@ __author__ = 'Romanzi (Roman Sytnik)'
 
 stylesheet = 'world_population.xml'
 image = 'world.png'
-m = mapnik.Map(600, 300)
+m = mapnik.Map(1200, 600)
 mapnik.load_map(m, stylesheet)
 m.zoom_all()
 
