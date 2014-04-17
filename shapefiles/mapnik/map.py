@@ -4,7 +4,7 @@ __author__ = 'Romanzi (Roman Sytnik)'
 
 # у меня возникли проблемы с импортом на интерпритаторе 3.3., когда я подключил 2.7, то всё заработало
 
-stylesheet = 'world_style.xml'
+stylesheet = 'world_population.xml'
 image = 'world.png'
 m = mapnik.Map(600, 300)
 mapnik.load_map(m, stylesheet)
