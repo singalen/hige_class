@@ -10,4 +10,5 @@ m = mapnik.Map(1200, 600)
 mapnik.load_map(m, stylesheet)
 m.zoom_all()
 
-mapnik.render_to_file(m,'world.png', 'png')
+mapnik.render_to_file(m, 'world.png', 'png')
+
