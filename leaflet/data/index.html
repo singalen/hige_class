@@ -46,7 +46,7 @@
         "fillOpacity": 0.5
     };
 
-    var geojsonURL = 'http://polymaps.appspot.com/state/{z}/{x}/{y}.json';
+    var geojsonURL = '/geojson/{z}/{x}/{y}.json';
     var geojsonTileLayer = new L.TileLayer.GeoJSON(geojsonURL, {
             clipTiles: true,
             unique: function (feature) {
