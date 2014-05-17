@@ -63,32 +63,42 @@ def read_shapefile_features():
 features = read_shapefile_features()
 
 
-def tile_to_latlon(x, y, zoom):
-    n = 2 ** zoom
-    lon_deg = x / n * 360.0 - 180.0
-    lat_rad = math.atan(math.sinh(math.pi * (1 - 2 * y / n)))
-    lat_deg = lat_rad * 180.0 / math.pi
-    return lat_deg, lon_deg,
-
-
-def get_tile_bbox(x, y, zoom):
-    p1 = tile_to_latlon(x, y, zoom)
-    p2 = tile_to_latlon(x + 1, y + 1, zoom)
-    return p1[1], p1[0], p2[1], p2[0],
-
-
-def range_overlap(a_min, a_max, b_min, b_max):
+class TileUtils:
     """
-    Neither range is completely greater than the other
+    Свалка функций тайловой арифметики
     """
-    return not ((a_min > b_max) or (b_min > a_max))
+    @staticmethod
+    def tile_to_latlon(x, y, zoom):
+        n = 2 ** zoom
+        lon_deg = x / n * 360.0 - 180.0
+        lat_rad = math.atan(math.sinh(math.pi * (1 - 2 * y / n)))
+        lat_deg = lat_rad * 180.0 / math.pi
+        return lat_deg, lon_deg,
+
+    @staticmethod
+    def get_tile_bbox(x, y, zoom):
+        p1 = TileUtils.tile_to_latlon(x, y, zoom)
+        p2 = TileUtils.tile_to_latlon(x + 1, y + 1, zoom)
+        return p1[1], p1[0], p2[1], p2[0],
 
 
-def overlap(r1, r2):
+class Rect:
     """
-    Overlapping rectangles overlap both horizontally & vertically
+    Свалка функций для работы с прямоугольниками
     """
-    return range_overlap(r1[0], r1[2], r2[0], r2[2]) and range_overlap(r1[1], r1[3], r2[1], r2[3])
+    @staticmethod
+    def range_overlap(a_min, a_max, b_min, b_max):
+        """
+        Neither range is completely greater than the other
+        """
+        return not ((a_min > b_max) or (b_min > a_max))
+
+    @staticmethod
+    def overlap(r1, r2):
+        """
+        Overlapping rectangles overlap both horizontally & vertically
+        """
+        return Rect.range_overlap(r1[0], r1[2], r2[0], r2[2]) and Rect.range_overlap(r1[1], r1[3], r2[1], r2[3])
 
 
 @route('/')
@@ -103,9 +113,9 @@ def server_static(filename):
 def geojson(zoom, x, y):
     # http://wiki.openstreetmap.org/wiki/Slippy_map_tilenames#X_and_Y
 
-    bbox = get_tile_bbox(x, y, zoom)
+    bbox = TileUtils.get_tile_bbox(x, y, zoom)
 
-    matching_features = [f.__dict__ for f in features if overlap(f.geometry.bbox, bbox)]
+    matching_features = [f.__dict__ for f in features if Rect.overlap(f.geometry.bbox, bbox)]
 
     print('x: {}, y: {}, bbox: {}, features: {}'.format(x, y, bbox, len(matching_features)))
 
