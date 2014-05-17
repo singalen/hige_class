@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+#!/usr/bin/env python
 import mapnik
 __author__ = 'Romanzi (Roman Sytnik)'
 

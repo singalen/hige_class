@@ -1,261 +1,56 @@
 import json
+import math
+import shapefile
 
 __author__ = 'user'
 
 from bottle import route, run, template, static_file
 
+def read_shapefile():
+    sf = shapefile.Reader("data/sample/ne_10m_admin_0_countries")
+
+    fields = sf.fields[1:]
+    field_names = [field[0] for field in fields]
+    print(field_names, sf.bbox)
+
+def read_shapefile_features():
+    sf = shapefile.Reader("data/sample/ne_10m_admin_0_countries")
+
+    features = []
+    for s in sf.shapes():
+        gi = s.__geo_interface__
+        if gi['type'] in ['LineString', 'Polygon']:
+            feature = {
+                "type": "Polygon",
+                'coordinates': gi['coordinates']
+            }
+            features.append(feature)
+            # for polygon in gi['coordinates']:
+            #     points = [point_to_image(p) for p in polygon]
+        # elif gi['type'] == 'MultiPolygon':
+        #     for multi_polygon in gi['coordinates']:
+        #         for polygon in multi_polygon:
+        #             points = [point_to_image(p) for p in polygon]
+
 @route('/data/<filename>')
 def server_static(filename):
     return static_file(filename, root='data')
 
-maine = {
-  "type": "FeatureCollection",
-  "features": [
-    {
-      "geometry": {
-        "type": "MultiPolygon",
-        "coordinates": [
-          [
-            [
-              [
-                -67.345819,
-                45.128724
-              ],
-              [
-                -67.344874,
-                45.128179
-              ],
-              [
-                -67.343714,
-                45.128724
-              ],
-              [
-                -67.124831,
-                45.128724
-              ],
-              [
-                -67.092937,
-                45.074057
-              ],
-              [
-                -67.109368,
-                45.070189
-              ],
-              [
-                -67.120322,
-                45.054715
-              ],
-              [
-                -67.076507,
-                45.019883
-              ],
-              [
-                -67.043645,
-                44.957907
-              ],
-              [
-                -67.060076,
-                44.934649
-              ],
-              [
-                -67.131275,
-                44.923016
-              ],
-              [
-                -67.15866,
-                44.907503
-              ],
-              [
-                -67.186044,
-                44.91526
-              ],
-              [
-                -67.202475,
-                44.888104
-              ],
-              [
-                -67.153183,
-                44.860936
-              ],
-              [
-                -67.15866,
-                44.818217
-              ],
-              [
-                -67.136752,
-                44.814332
-              ],
-              [
-                -67.142229,
-                44.872581
-              ],
-              [
-                -67.114845,
-                44.864818
-              ],
-              [
-                -67.049122,
-                44.903623
-              ],
-              [
-                -66.988877,
-                44.853171
-              ],
-              [
-                -66.988877,
-                44.80656
-              ],
-              [
-                -67.027215,
-                44.771578
-              ],
-              [
-                -67.103891,
-                44.748244
-              ],
-              [
-                -67.114845,
-                44.713226
-              ],
-              [
-                -67.15866,
-                44.670398
-              ],
-              [
-                -67.218905,
-                44.658712
-              ],
-              [
-                -67.284628,
-                44.623639
-              ],
-              [
-                -67.312012,
-                44.666502
-              ],
-              [
-                -67.312012,
-                44.709334
-              ],
-              [
-                -67.344874,
-                44.697656
-              ],
-              [
-                -67.405119,
-                44.717118
-              ],
-              [
-                -67.388689,
-                44.666502
-              ],
-              [
-                -67.372258,
-                44.647023
-              ],
-              [
-                -67.410596,
-                44.596346
-              ],
-              [
-                -67.432504,
-                44.631435
-              ],
-              [
-                -67.427027,
-                44.670398
-              ],
-              [
-                -67.448934,
-                44.666502
-              ],
-              [
-                -67.448934,
-                44.631435
-              ],
-              [
-                -67.432504,
-                44.615843
-              ],
-              [
-                -67.459888,
-                44.600246
-              ],
-              [
-                -67.498226,
-                44.611944
-              ],
-              [
-                -67.50918,
-                44.647023
-              ],
-              [
-                -67.556247,
-                44.647023
-              ],
-              [
-                -67.556247,
-                45.128724
-              ],
-              [
-                -67.345819,
-                45.128724
-              ]
-            ]
-          ],
-          [
-            [
-              [
-                -67.556247,
-                44.637523
-              ],
-              [
-                -67.552995,
-                44.623639
-              ],
-              [
-                -67.556247,
-                44.61252
-              ],
-              [
-                -67.556247,
-                44.637523
-              ]
-            ]
-          ],
-          [
-            [
-              [
-                -67.498226,
-                44.588546
-              ],
-              [
-                -67.536564,
-                44.565138
-              ],
-              [
-                -67.542041,
-                44.592446
-              ],
-              [
-                -67.498226,
-                44.588546
-              ]
-            ]
-          ]
-        ]
-      },
-      "type": "Feature",
-      "id": "state:23",
-      "properties": {
-        "name": "Maine"
-      }
-    }
-  ]
-}
-
 @route('/geojson/<zoom>/<x>/<y>.json')
 def geojson(zoom, x, y):
-    return json.dumps(maine)
+    # http://wiki.openstreetmap.org/wiki/Slippy_map_tilenames#X_and_Y
+    zoom = int(zoom)
+    x = int(x)
+    y = int(y)
+    n = 2 ** zoom
+    lon_deg = x / n * 360.0 - 180.0
+    lat_rad = math.atan(math.sinh(math.pi * (1 - 2 * y / n)))
+    lat_deg = lat_rad * 180.0 / math.pi
+
+    print('x: {}, y: {}'.format(x, y))
+
+    features = read_shapefile_features()
+
+    return json.dumps(features)
 
 run(host='localhost', port=8080)
