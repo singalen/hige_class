@@ -20,6 +20,28 @@ class Feature:
             "name": name
         }
 
+    def calc_bbox(self):
+        bbox = [180, 90, -180, -90]
+        for polygon in self.get_polygons():
+            for p in polygon:
+                if p[0] < bbox[0]:
+                    bbox[0] = p[0]
+                if p[0] > bbox[2]:
+                    bbox[2] = p[0]
+                if p[1] < bbox[1]:
+                    bbox[1] = p[1]
+                if p[1] > bbox[3]:
+                    bbox[3] = p[1]
+        return bbox
+
+    def get_polygons(self):
+        if self.geometry['type'] == 'MultiPolygon':
+            return self.geometry['coordinates']
+        elif self.geometry['type'] == 'Polygon':
+            return [self.geometry['coordinates']]
+        else:
+            raise ValueError('Not implemented yet')
+
 
 def read_shapefile_features():
     sf = shapefile.Reader("data/sample/ne_10m_admin_0_countries")
@@ -29,7 +51,7 @@ def read_shapefile_features():
     for s in shapes:
         gi = s.__geo_interface__
         features.append(Feature(gi, 'name'))
-        if len(features) >= 3:
+        if len(features) >= 10:
             break
     return features
 
