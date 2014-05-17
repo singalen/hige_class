@@ -1,29 +1,19 @@
-import json
 import math
 import itertools
 import shapefile
 from bottle import route, run, static_file
 
 
-class Geometry:
+class Geometry(dict):
     def __init__(self, geo_interface):
+        super().__init__(**geo_interface)
         self.type = geo_interface['type']
         self.coordinates = geo_interface['coordinates']
-        self.bbox = [0, 0, 200, 200]
+        self.bbox = self.__calc_bbox()
 
-
-class Feature:
-    def __init__(self, geo_interface, name):
-        self.geometry = geo_interface
-        self.type = "Feature"
-        self.id = 100
-        self.properties = {
-            "name": name
-        }
-
-    def calc_bbox(self):
+    def __calc_bbox(self):
         bbox = [180, 90, -180, -90]
-        for polygon in self.get_polygons():
+        for polygon in self.__get_polygons():
             for p in polygon:
                 if p[0] < bbox[0]:
                     bbox[0] = p[0]
@@ -35,13 +25,23 @@ class Feature:
                     bbox[3] = p[1]
         return bbox
 
-    def get_polygons(self):
-        if self.geometry['type'] == 'MultiPolygon':
-            return itertools.chain(*self.geometry['coordinates'])
-        elif self.geometry['type'] == 'Polygon':
-            return self.geometry['coordinates']
+    def __get_polygons(self):
+        if self['type'] == 'MultiPolygon':
+            return itertools.chain(*self['coordinates'])
+        elif self['type'] == 'Polygon':
+            return self['coordinates']
         else:
             raise ValueError('Not implemented yet')
+
+
+class Feature:
+    def __init__(self, geo_interface, name):
+        self.geometry = Geometry(geo_interface)
+        self.type = "Feature"
+        self.id = 100
+        self.properties = {
+            "name": name
+        }
 
 
 def read_shapefile_features():
@@ -60,10 +60,7 @@ def read_shapefile_features():
     return features
 
 
-features = {
-    f: f.calc_bbox()
-    for f in read_shapefile_features()
-}
+features = read_shapefile_features()
 
 
 def tile_to_latlon(x, y, zoom):
@@ -106,11 +103,14 @@ def geojson(zoom, x, y):
     y = int(y)
 
     bbox = get_tile_bbox(x, y, zoom)
-    print('x: {}, y: {}, bbox: {}'.format(x, y, bbox))
+
+    matching_features = [f.__dict__ for f in features if overlap(f.geometry.bbox, bbox)]
+
+    print('x: {}, y: {}, bbox: {}, features: {}'.format(x, y, bbox, len(matching_features)))
 
     return {
         "type": "FeatureCollection",
-        "features": [f.__dict__ for f in features.keys() if overlap(features[f], bbox)]
+        "features": matching_features
     }
 
-run(host='localhost', port=8080)
+run(host='localhost', port=8809)
