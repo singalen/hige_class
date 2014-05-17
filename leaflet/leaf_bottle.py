@@ -95,12 +95,9 @@ def overlap(r1, r2):
 def server_static(filename):
     return static_file(filename, root='data')
 
-@route('/geojson/<zoom>/<x>/<y>.json')
+@route('/geojson/<zoom:int>/<x:int>/<y:int>.json')
 def geojson(zoom, x, y):
     # http://wiki.openstreetmap.org/wiki/Slippy_map_tilenames#X_and_Y
-    zoom = int(zoom)
-    x = int(x)
-    y = int(y)
 
     bbox = get_tile_bbox(x, y, zoom)
 
