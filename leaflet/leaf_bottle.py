@@ -1,7 +1,8 @@
 import json
 import math
+import itertools
 import shapefile
-from bottle import route, run, template, static_file
+from bottle import route, run, static_file
 
 
 class Geometry:
@@ -36,14 +37,15 @@ class Feature:
 
     def get_polygons(self):
         if self.geometry['type'] == 'MultiPolygon':
-            return self.geometry['coordinates']
+            return itertools.chain(*self.geometry['coordinates'])
         elif self.geometry['type'] == 'Polygon':
-            return [self.geometry['coordinates']]
+            return self.geometry['coordinates']
         else:
             raise ValueError('Not implemented yet')
 
 
 def read_shapefile_features():
+    print('Reading features, calculating bboxes...')
     sf = shapefile.Reader("data/sample/ne_10m_admin_0_countries")
     shapes = sf.shapes()
 
@@ -53,10 +55,15 @@ def read_shapefile_features():
         features.append(Feature(gi, 'name'))
         if len(features) >= 10:
             break
+
+    print('Done.')
     return features
 
 
-features = read_shapefile_features()
+features = {
+    f: f.calc_bbox()
+    for f in read_shapefile_features()
+}
 
 
 def tile_to_latlon(x, y, zoom):
@@ -64,13 +71,13 @@ def tile_to_latlon(x, y, zoom):
     lon_deg = x / n * 360.0 - 180.0
     lat_rad = math.atan(math.sinh(math.pi * (1 - 2 * y / n)))
     lat_deg = lat_rad * 180.0 / math.pi
-    return (lat_deg, lon_deg,)
+    return lat_deg, lon_deg,
 
 
 def get_tile_bbox(x, y, zoom):
     p1 = tile_to_latlon(x, y, zoom)
     p2 = tile_to_latlon(x + 1, y + 1, zoom)
-    return (p1[1], p1[0], p2[1], p2[0])
+    return p1[1], p1[0], p2[1], p2[0],
 
 
 @route('/data/<filename>')
@@ -86,9 +93,9 @@ def geojson(zoom, x, y):
 
     print('x: {}, y: {}, bbox: {}'.format(x, y, get_tile_bbox(x, y, zoom)))
 
-    return json.dumps({
+    return {
         "type": "FeatureCollection",
-        "features": [f.__dict__ for f in features]
-    }, indent=2)
+        "features": [f.__dict__ for f in features.keys()]
+    }
 
 run(host='localhost', port=8080)
