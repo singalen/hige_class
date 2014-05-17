@@ -91,6 +91,10 @@ def overlap(r1, r2):
     return range_overlap(r1[0], r1[2], r2[0], r2[2]) and range_overlap(r1[1], r1[3], r2[1], r2[3])
 
 
+@route('/')
+def server_static():
+    return static_file('index.html', root='data')
+
 @route('/data/<filename>')
 def server_static(filename):
     return static_file(filename, root='data')
