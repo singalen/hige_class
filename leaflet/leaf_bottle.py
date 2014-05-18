@@ -39,6 +39,7 @@ class Feature:
         self.geometry = Geometry(geo_interface)
         self.type = "Feature"
         self.id = 100
+        self.name = name
         self.properties = {
             "name": name
         }
@@ -47,16 +48,22 @@ class Feature:
 def read_shapefile_features():
     print('Reading features, calculating bboxes...')
     sf = shapefile.Reader("data/sample/ne_10m_admin_0_countries")
-    shapes = sf.shapes()
+
+    field_names = [f[0] for f in sf.fields[1:]]
+    name_field_index = field_names.index('NAME')
+    assert name_field_index
 
     features = []
-    for s in shapes:
+    re = sf.records()
+
+    for s, r in zip(sf.shapes(), sf.records()):
         gi = s.__geo_interface__
-        features.append(Feature(gi, 'name'))
+        features.append(Feature(gi, str(r[name_field_index])))
+        print(r[name_field_index], features[-1].geometry.bbox)
         # if len(features) >= 10:
         #     break
 
-    print('Done.')
+    print('Done, features read: ', len(features))
     return features
 
 
@@ -79,7 +86,7 @@ class TileUtils:
     def get_tile_bbox(x, y, zoom):
         p1 = TileUtils.tile_to_latlon(x, y, zoom)
         p2 = TileUtils.tile_to_latlon(x + 1, y + 1, zoom)
-        return p1[1], p1[0], p2[1], p2[0],
+        return p1[1], p2[0], p2[1], p1[0],
 
 
 class Rect:
@@ -117,7 +124,7 @@ def geojson(zoom, x, y):
 
     matching_features = [f.__dict__ for f in features if Rect.overlap(f.geometry.bbox, bbox)]
 
-    print('x: {}, y: {}, bbox: {}, features: {}'.format(x, y, bbox, len(matching_features)))
+    print('x: {}, y: {}, bbox: {}, features: {}'.format(x, y, bbox, [f['name'] for f in matching_features]))
 
     return {
         "type": "FeatureCollection",
