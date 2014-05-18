@@ -13,32 +13,70 @@ class Geometry(dict):
 
     def __calc_bbox(self):
         bbox = [180, 90, -180, -90]
-        for polygon in self.__get_polygons():
-            for p in polygon:
-                if p[0] < bbox[0]:
-                    bbox[0] = p[0]
-                if p[0] > bbox[2]:
-                    bbox[2] = p[0]
-                if p[1] < bbox[1]:
-                    bbox[1] = p[1]
-                if p[1] > bbox[3]:
-                    bbox[3] = p[1]
+        for polygons in self.__get_polygons():
+            for polygon in polygons:
+                for p in polygon:
+                    if p[0] < bbox[0]:
+                        bbox[0] = p[0]
+                    if p[0] > bbox[2]:
+                        bbox[2] = p[0]
+                    if p[1] < bbox[1]:
+                        bbox[1] = p[1]
+                    if p[1] > bbox[3]:
+                        bbox[3] = p[1]
+
+        assert bbox[0] < bbox[2]
+        assert bbox[1] < bbox[3]
         return bbox
+
 
     def __get_polygons(self):
         if self['type'] == 'MultiPolygon':
-            return itertools.chain(*self['coordinates'])
-        elif self['type'] == 'Polygon':
             return self['coordinates']
+        elif self['type'] == 'Polygon':
+            return [self['coordinates']]
         else:
             raise ValueError('Not implemented yet')
+
+    @staticmethod
+    def too_close(p1, p2, delta):
+        return abs(p1[0]-p2[0]) < delta and abs(p1[1]-p2[1]) < delta
+
+    def filter_polygons(self, delta):
+        """
+        Удаляет вроде как лишние (слишком близкие) точки.
+        TODO: написать тест.
+        """
+        result_multi_polygons = []
+        for polygons in self.__get_polygons():
+            result_polygons = []
+            for polygon in polygons:
+                result_polygon = []
+
+                if len(polygon) == 1:
+                    print('1-poly')
+
+                for p in polygon:
+                    if not result_polygon or not Geometry.too_close(p, result_polygon[-1], delta):
+                        result_polygon.append(p)
+
+                print('{} filtered for distance of {} degrees. Points before: {}, after: {}'
+                      .format(self['type'], delta, len(polygon), len(result_polygon)))
+
+                if len(result_polygon) > 1:
+                    result_polygons.append(result_polygon)
+
+            result_multi_polygons.append(result_polygons)
+
+        return result_multi_polygons
+
 
 
 class Feature:
     def __init__(self, geo_interface, name):
         self.geometry = Geometry(geo_interface)
         self.type = "Feature"
-        self.id = 100
+        self.id = name
         self.name = name
         self.properties = {
             "name": name
@@ -54,14 +92,10 @@ def read_shapefile_features():
     assert name_field_index
 
     features = []
-    re = sf.records()
 
     for s, r in zip(sf.shapes(), sf.records()):
         gi = s.__geo_interface__
         features.append(Feature(gi, str(r[name_field_index])))
-        print(r[name_field_index], features[-1].geometry.bbox)
-        # if len(features) >= 10:
-        #     break
 
     print('Done, features read: ', len(features))
     return features
@@ -73,6 +107,7 @@ features = read_shapefile_features()
 class TileUtils:
     """
     Свалка функций тайловой арифметики
+    http://wiki.openstreetmap.org/wiki/Slippy_map_tilenames#X_and_Y
     """
     @staticmethod
     def tile_to_latlon(x, y, zoom):
@@ -87,6 +122,13 @@ class TileUtils:
         p1 = TileUtils.tile_to_latlon(x, y, zoom)
         p2 = TileUtils.tile_to_latlon(x + 1, y + 1, zoom)
         return p1[1], p2[0], p2[1], p1[0],
+
+    @staticmethod
+    def degrees_in_pixel(zoom):
+        """
+        Примерный размер 1 пиксела в градусах широты
+        """
+        return 90/(256*(2**zoom))
 
 
 class Rect:
@@ -118,11 +160,13 @@ def server_static(filename):
 
 @route('/geojson/<zoom:int>/<x:int>/<y:int>.json')
 def geojson(zoom, x, y):
-    # http://wiki.openstreetmap.org/wiki/Slippy_map_tilenames#X_and_Y
-
     bbox = TileUtils.get_tile_bbox(x, y, zoom)
+    matching_features = [dict(f.__dict__) for f in features if Rect.overlap(f.geometry.bbox, bbox)]
 
-    matching_features = [f.__dict__ for f in features if Rect.overlap(f.geometry.bbox, bbox)]
+    too_close = TileUtils.degrees_in_pixel(zoom) * 4
+
+    for f in matching_features:
+        f['geometry']['coordinates'] = f['geometry'].filter_polygons(too_close)
 
     print('x: {}, y: {}, bbox: {}, features: {}'.format(x, y, bbox, [f['name'] for f in matching_features]))
 
