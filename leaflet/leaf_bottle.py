@@ -29,7 +29,6 @@ class Geometry(dict):
         assert bbox[1] < bbox[3]
         return bbox
 
-
     def __get_polygons(self):
         if self['type'] == 'MultiPolygon':
             return self['coordinates']
@@ -46,6 +45,7 @@ class Geometry(dict):
         """
         Удаляет вроде как лишние (слишком близкие) точки.
         TODO: написать тест.
+        TODO: использовать более умный алгоритм http://bost.ocks.org/mike/simplify/
         """
         result_multi_polygons = []
         for polygons in self.__get_polygons():
@@ -69,7 +69,6 @@ class Geometry(dict):
             result_multi_polygons.append(result_polygons)
 
         return result_multi_polygons
-
 
 
 class Feature:
@@ -175,4 +174,7 @@ def geojson(zoom, x, y):
         "features": matching_features
     }
 
-run(host='localhost', port=8809)
+
+if __name__ == '__main__':
+    # cProfile.run('foo()')
+    run(host='localhost', port=8809)
