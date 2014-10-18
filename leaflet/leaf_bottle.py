@@ -1,5 +1,4 @@
 import math
-import itertools
 import shapefile
 from bottle import route, run, static_file
 
@@ -176,5 +175,4 @@ def geojson(zoom, x, y):
 
 
 if __name__ == '__main__':
-    # cProfile.run('foo()')
     run(host='localhost', port=8809)
